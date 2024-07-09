@@ -5,6 +5,20 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 
+enum Level {
+  trace(1000),
+  debug(2000),
+  info(3000),
+  warning(4000),
+  error(5000),
+  fatal(6000),
+  ;
+
+  final int value;
+
+  const Level(this.value);
+}
+
 class LogUtils {
   late int? maxLength;
   late int maxFileCount;
@@ -14,26 +28,33 @@ class LogUtils {
 
   LogUtils();
 
+  static final levelPrefixes = {
+    Level.trace: 'trace',
+    Level.debug: 'debug',
+    Level.info: 'info',
+    Level.warning: 'warning',
+    Level.error: 'error',
+    Level.fatal: 'fatal',
+  };
 
   init(String dirPath, String fileName, {int? maxLength, int maxFileCount = 99}) {
     this.dirPath = dirPath;
-    this.fileName =fileName;
+    this.fileName = fileName;
     this.maxFileCount = maxFileCount;
-    this.maxLength  = maxLength;
+    this.maxLength = maxLength;
     debugPrint("dirPath:$dirPath");
     debugPrint("fileName:$fileName");
     debugPrint("maxFileCount:$maxFileCount");
     debugPrint("maxLength:$maxLength");
   }
 
-
-  void log(String log) {
+  void log(String log,{Level level = Level.info}) {
     String logFilePath = path.join(dirPath, "$fileName.log");
     File logFile = File(logFilePath);
     if (!logFile.existsSync()) {
       logFile.createSync(recursive: true);
     }
-    log = "${DateTime.now().toIso8601String()}\t$log\n";
+    log = "${DateTime.now().toIso8601String()}\t【${levelPrefixes[level]}】$log\n";
     debugPrint(log);
     if (!logFile.existsSync()) {
       logFile.createSync(recursive: true);
@@ -67,5 +88,21 @@ class LogUtils {
       logFile.renameSync(rolledLogFile.path);
     }
   }
-}
 
+  List<String> readLogsAsLines() {
+    String logFilePath = path.join(dirPath, "$fileName.log");
+    File logFile = File(logFilePath);
+    if (!logFile.existsSync()) {
+      return [];
+    }
+    return logFile.readAsLinesSync();
+  }
+
+  void clear() {
+    String logFilePath = path.join(dirPath, "$fileName.log");
+    File logFile = File(logFilePath);
+    if (logFile.existsSync()) {
+      logFile.deleteSync();
+    }
+  }
+}
