@@ -54,7 +54,7 @@ class LogUtils {
     if (!logFile.existsSync()) {
       logFile.createSync(recursive: true);
     }
-    log = "${DateTime.now().toIso8601String()}\t【${levelPrefixes[level]}】$log\n";
+    log = "${DateTime.now().toUtc().toIso8601String()}\t【${levelPrefixes[level]}】$log\n";
     debugPrint(log);
     if (!logFile.existsSync()) {
       logFile.createSync(recursive: true);
